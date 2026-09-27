@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Caixa de Ferramentas IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #F5F2EA;
+    --panel: #FFFEFB;
+    --panel-edge: #E6E0D2;
+    --peg: #EFE9DA;
+    --amber: #DA7756;
+    --amber-dim: #C4643F;
+    --steel: #A69F8E;
+    --text: #2B2924;
+    --text-dim: #7A7468;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *{ box-sizing: border-box; }
+  html, body{ height: 100%; margin: 0; }
+  body{
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(43,41,36,0.07) 1px, transparent 1px);
+    background-size: 22px 22px;
+    color: var(--text);
+    font-family: 'Inter', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header{
+    position: sticky;
+    top: 0;
+    padding: calc(env(safe-area-inset-top, 0px) + 20px) 20px 16px;
+    background: linear-gradient(180deg, rgba(245,242,234,0.97), rgba(245,242,234,0.88) 70%, transparent);
+    backdrop-filter: blur(6px);
+    z-index: 10;
+  }
+  .eyebrow{
+    color: var(--amber);
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  h1{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 2.1rem;
+    line-height: 1;
+    margin: 0 0 6px;
+    color: var(--text);
+    letter-spacing: 0.01em;
+  }
+  header p{
+    margin: 0;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    max-width: 60ch;
+  }
+  .controls{
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+  }
+  #search{
+    flex: 1;
+    min-width: 0;
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 8px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+  }
+  #search:focus{
+    outline: none;
+    border-color: var(--amber-dim);
+  }
+  #search::placeholder{ color: var(--text-dim); }
+
+  #favToggle{
+    flex-shrink: 0;
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 8px;
+    padding: 0 14px;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  #favToggle.active{
+    background: var(--amber);
+    border-color: var(--amber);
+    color: #fff;
+  }
+
+  main{ padding: 4px 20px 48px; max-width: 720px; margin: 0 auto; }
+
+  .rack{ margin-top: 22px; }
+  .rack-label{
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .rack-label .num{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--amber-dim);
+    min-width: 1.6em;
+  }
+  .rack-label h2{
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 1.25rem;
+    margin: 0;
+    color: var(--text);
+  }
+
+  .tool{
+    background: var(--panel);
+    border: 1px solid var(--panel-edge);
+    border-radius: 10px;
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .tool + .tool{ margin-top: 8px; }
+  .rack + .rack{ margin-top: 22px; }
+  .tool::before{
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--amber-dim);
+  }
+  .tool-main{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .tool .hook{
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--peg);
+    border: 2px solid var(--steel);
+    flex-shrink: 0;
+  }
+  .tool .info{ flex: 1; min-width: 0; }
+  .name-row{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .tool .name{
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text);
+  }
+  .price{
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 2px 7px;
+    border-radius: 20px;
+    color: var(--amber-dim);
+    background: rgba(218,119,86,0.12);
+  }
+  .price.gratis{ color: #4a7a5c; background: rgba(74,122,92,0.12); }
+  .tool .desc{
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+  }
+  .fav{
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    line-height: 1;
+    color: var(--steel);
+    cursor: pointer;
+    padding: 4px;
+  }
+  .fav.active{ color: var(--amber); }
+  .tool .go{
+    flex-shrink: 0;
+    color: var(--amber);
+    font-size: 1.1rem;
+    text-decoration: none;
+    padding: 4px;
+  }
+
+  .notes-toggle{
+    margin-top: 8px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.76rem;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .notes{
+    display: none;
+    width: 100%;
+    margin-top: 8px;
+    background: var(--peg);
+    border: 1px solid var(--panel-edge);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-family: inherit;
+    font-size: 0.82rem;
+    color: var(--text);
+    resize: vertical;
+    min-height: 50px;
+  }
+  .notes.open{ display: block; }
+
+  .empty{
+    text-align: center;
+    color: var(--text-dim);
+    padding: 40px 20px;
+    font-size: 0.9rem;
+  }
+
+  footer{
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    padding: 10px 20px calc(env(safe-area-inset-bottom, 0px) + 24px);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="eyebrow">REFERÊNCIA RÁPIDA</p>
+  <h1>Caixa de Ferramentas IA</h1>
+  <p>Uma IA pra cada função — organizadas como no pegboard da oficina. Toque pra abrir.</p>
+  <div class="controls">
+    <input id="search" type="text" placeholder="Buscar por nome ou categoria...">
+    <button id="favToggle" type="button" title="Somente favoritos">★</button>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<footer id="footerCount"></footer>
+
+<script>
+const DATA = [
+  { cat: "Textos", tools: [
+    { id: "chatgpt", tool: "ChatGPT", desc: "Redação, respostas e raciocínio em texto", url: "https://chat.openai.com", price: "freemium" },
+    { id: "claude", tool: "Claude", desc: "Conversa, redação e raciocínio, com memória e apps PWA", url: "https://claude.ai", price: "freemium" }
+  ]},
+  { cat: "Imagens", tools: [
+    { id: "krea", tool: "Krea", desc: "Geração e edição de imagens com IA", url: "https://krea.ai", price: "freemium" }
+  ]},
+  { cat: "Vídeos", tools: [
+    { id: "runway", tool: "Runway", desc: "Criação e edição de vídeo com IA", url: "https://runwayml.com", price: "pago" }
+  ]},
+  { cat: "Apresentações", tools: [
+    { id: "gamma", tool: "Gamma", desc: "Slides e decks gerados automaticamente", url: "https://gamma.app", price: "freemium" }
+  ]},
+  { cat: "Áudios", tools: [
+    { id: "elevenlabs", tool: "ElevenLabs", desc: "Vozes sintéticas e narração realista", url: "https://elevenlabs.io", price: "freemium" }
+  ]},
+  { cat: "Reuniões", tools: [
+    { id: "tactiq", tool: "Tactiq", desc: "Transcrição e resumo de reuniões", url: "https://tactiq.io", price: "freemium" }
+  ]},
+  { cat: "Ideias", tools: [
+    { id: "ideamap", tool: "IdeaMap", desc: "Organização e desenvolvimento de ideias", url: "https://ideamap.ai", price: "freemium" }
+  ]},
+  { cat: "Mapas mentais", tools: [
+    { id: "mapify", tool: "Mapify", desc: "Mapas mentais gerados a partir de conteúdo", url: "https://mapify.so", price: "freemium" }
+  ]},
+  { cat: "Código", tools: [
+    { id: "cursor", tool: "Cursor", desc: "Editor de código com IA integrada", url: "https://cursor.com", price: "freemium" }
+  ]},
+  { cat: "Automação", tools: [
+    { id: "zapier", tool: "Zapier", desc: "Automação de tarefas e fluxos entre apps", url: "https://zapier.com", price: "freemium" }
+  ]},
+  { cat: "Tradução", tools: [
+    { id: "deepl", tool: "DeepL", desc: "Tradução de textos e documentos", url: "https://www.deepl.com", price: "freemium" }
+  ]},
+  { cat: "Planilhas", tools: [
+    { id: "julius", tool: "Julius AI", desc: "Análise de dados e planilhas com IA", url: "https://julius.ai", price: "freemium" }
+  ]}
+];
+
+const PRICE_LABEL = { gratis: "Grátis", freemium: "Freemium", pago: "Pago" };
+
+const main = document.getElementById('main');
+const search = document.getElementById('search');
+const favToggle = document.getElementById('favToggle');
+const footerCount = document.getElementById('footerCount');
+
+let favs = [];
+let notes = {};
+try{ favs = JSON.parse(localStorage.getItem('fia_favs') || '[]'); }catch(e){ favs = []; }
+try{ notes = JSON.parse(localStorage.getItem('fia_notes') || '{}'); }catch(e){ notes = {}; }
+let onlyFavs = false;
+
+function saveFavs(){
+  try{ localStorage.setItem('fia_favs', JSON.stringify(favs)); }catch(e){}
+}
+function saveNotes(){
+  try{ localStorage.setItem('fia_notes', JSON.stringify(notes)); }catch(e){}
+}
+
+function totalCount(){
+  let cats = DATA.length, tools = 0;
+  DATA.forEach(c => tools += c.tools.length);
+  footerCount.textContent = cats + ' categorias · ' + tools + ' ferramentas';
+}
+
+function render(filter){
+  const q = (filter || "").trim().toLowerCase();
+  const items = DATA
+    .map(cat => ({
+      cat: cat.cat,
+      tools: cat.tools.filter(t => {
+        const matchesQ = !q || cat.cat.toLowerCase().includes(q) || t.tool.toLowerCase().includes(q);
+        const matchesFav = !onlyFavs || favs.includes(t.id);
+        return matchesQ && matchesFav;
+      })
+    }))
+    .filter(cat => cat.tools.length);
+
+  main.innerHTML = "";
+
+  if(!items.length){
+    main.innerHTML = '<div class="empty">Nenhuma ferramenta encontrada.</div>';
+    return;
+  }
+
+  items.forEach((cat, i) => {
+    const rack = document.createElement('div');
+    rack.className = 'rack';
+    const toolsHtml = cat.tools.map(d => {
+      const isFav = favs.includes(d.id);
+      const priceClass = d.price === 'gratis' ? 'gratis' : '';
+      const noteVal = notes[d.id] || '';
+      return `
+      <div class="tool" data-id="${d.id}">
+        <div class="tool-main">
+          <span class="hook"></span>
+          <div class="info">
+            <div class="name-row">
+              <span class="name">${d.tool}</span>
+              <span class="price ${priceClass}">${PRICE_LABEL[d.price] || ''}</span>
+            </div>
+            <div class="desc">${d.desc}</div>
+          </div>
+          <button class="fav ${isFav ? 'active' : ''}" data-action="fav" title="Favoritar">${isFav ? '★' : '☆'}</button>
+          <a class="go" href="${d.url}" target="_blank" rel="noopener">›</a>
+        </div>
+        <button class="notes-toggle" data-action="note-toggle">${noteVal ? 'ver anotação' : '+ anotação'}</button>
+        <textarea class="notes ${noteVal ? '' : ''}" data-action="note-field" placeholder="Sua anotação sobre ${d.tool}...">${noteVal}</textarea>
+      </div>
+    `;
+    }).join('');
+    rack.innerHTML = `
+      <div class="rack-label">
+        <span class="num">${String(i+1).padStart(2,'0')}</span>
+        <h2>${cat.cat}</h2>
+      </div>
+      ${toolsHtml}
+    `;
+    main.appendChild(rack);
+  });
+}
+
+main.addEventListener('click', e => {
+  const favBtn = e.target.closest('[data-action="fav"]');
+  if(favBtn){
+    const card = favBtn.closest('.tool');
+    const id = card.dataset.id;
+    if(favs.includes(id)){
+      favs = favs.filter(x => x !== id);
+    } else {
+      favs.push(id);
+    }
+    saveFavs();
+    render(search.value);
+    return;
+  }
+  const noteBtn = e.target.closest('[data-action="note-toggle"]');
+  if(noteBtn){
+    const card = noteBtn.closest('.tool');
+    const field = card.querySelector('[data-action="note-field"]');
+    field.classList.toggle('open');
+    if(field.classList.contains('open')) field.focus();
+  }
+});
+
+main.addEventListener('input', e => {
+  if(e.target.matches('[data-action="note-field"]')){
+    const card = e.target.closest('.tool');
+    const id = card.dataset.id;
+    notes[id] = e.target.value;
+    saveNotes();
+  }
+});
+
+favToggle.addEventListener('click', () => {
+  onlyFavs = !onlyFavs;
+  favToggle.classList.toggle('active', onlyFavs);
+  render(search.value);
+});
+
+search.addEventListener('input', e => render(e.target.value));
+
+totalCount();
+render();
+</script>
+
+</body>
+</html>
